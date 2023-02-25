@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "MagicRegex"
+authors = [
+  { name="LooLzzz", email="noaml12@hotmail.com" },
+]
+description = "TODO"
+requires-python = ">=3.7"
+license = "MIT"
+classifiers = [
+  "Programming Language :: Python 3.7",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+]
+dynamic = ["version", "dependencies", "readme"]
+
+[tool.setuptools.dynamic]
+version = {file="src/__init__.py", attr="__version__"}
+dependencies = {file="src/requirements.txt"}
+readme = {file="README.md", content_type="text/markdown"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project.urls]
+"Homepage" = "https://github.com/loolzzz/MagicRegex"
+"Bug Tracker" = "https://github.com/loolzzz/MagicRegex/issues"
