@@ -1,67 +1,97 @@
 import re
-from typing import List, Set, Union
+from typing import Set, Union
 
-
-class MagicRegexExpression:
-    ...
+from . import tokens
 
 
 class MagicRegex:
     def __init__(self, flags: re.RegexFlag = 0):
-        self._expression = ''
+        self._base_token: tokens.BaseToken = tokens.EmptyToken()
         self._flags = flags
 
-    def _compile(self):
-        return re.compile(self._expression, self._flags)
-
-    def AND(self, expr: Union[str, MagicRegexExpression]):
-        """`rf'({expr1}{expr2})'`"""
+    def __add__(self, other: Union['MagicRegex', tokens.BaseToken]):
+        if isinstance(other, MagicRegex):
+            if other._flags != self._flags:
+                raise ValueError('cannot add two MagicRegex objects with different flags')
+            self._base_token += other._base_token
+        elif isinstance(other, tokens.BaseToken):
+            self._base_token += other
+        else:
+            raise TypeError(f'unsupported operand type(s) for +: {type(self)} and {type(other)}')
         return self
 
-    def OR(self, expr: Union[str, MagicRegexExpression]):
-        """`rf'({expr1}|{expr2})'`"""
+    @property
+    def raw(self):
+        return self._base_token.expression()
+
+    @property
+    def _right_most_token(self):
+        return self._base_token.right_most_token
+
+    def compile(self):
+        return re.compile(
+            pattern=self.raw,
+            flags=self._flags
+        )
+
+    def AND(self, other: Union[str, tokens.BaseToken]):
+        self._base_token += (tokens.ExpressionToken(other)
+                             if isinstance(other, str)
+                             else other)
         return self
 
-    def named_group(self, name: str, expr: Union[str, MagicRegexExpression]):
-        """`rf'(?P<{name}>{expr})'`"""
+    def OR(self, other: Union[str, tokens.BaseToken]):
+        self._base_token += tokens.OrToken(other)
+        return self
+
+    def capture_group(self):
+        self._base_token = tokens.CaptureGroupToken(self._base_token)
+        return self
+
+    def named_capture_group(self, name: str):
+        self._base_token = tokens.NamedCaptureGroupToken(name, self._base_token)
         return self
 
     def start_of_line(self):
-        """`r'^...'`"""
+        self._base_token += tokens.ExpressionToken(r'^')
         return self
 
     def end_of_line(self):
-        """`r'...$'`"""
+        self._base_token += tokens.ExpressionToken(r'$')
         return self
 
     def any_character(self):
-        """`r'.'`"""
-        return self
-
-    def any_characters(self, characters: Set[str]):
-        """`rf'[{characters}]'`"""
-        return self
-
-    def not_characters(self, characters: Set[str]):
-        """`rf'[^{characters}]'`"""
+        self._base_token += tokens.ExpressionToken(r'.')
         return self
 
     def digit(self):
-        """`r'\d'`"""
+        self._base_token += tokens.ExpressionToken(r'\d')
         return self
 
     def whitespace(self):
-        """`r'\s'`"""
+        self._base_token += tokens.ExpressionToken(r'\s')
+
+    def at_least_zero_times(self):
+        self._base_token = (tokens.CaptureGroupToken(self._right_most_token)
+                            + tokens.ExpressionToken(r'*'))
         return self
 
-    def at_least_zero_times(self, expr: Union[str, MagicRegexExpression]):
-        """`rf'({expr})*'`"""
+    def at_least_once(self):
+        self._base_token = (tokens.CaptureGroupToken(self._right_most_token)
+                            + tokens.ExpressionToken(r'+'))
         return self
 
-    def at_least_once(self, expr: Union[str, MagicRegexExpression]):
-        """`rf'({expr})+'`"""
+    def any_characters(self, characters: Set[str]):
+        self._base_token += tokens.AnyCharactersToken(characters)
         return self
 
-    def times(self, n: int):
-        """`rf'{{{n}}}'`"""
+    def not_characters(self, characters: Set[str]):
+        self._base_token += tokens.NotCharactersToken(characters)
+        return self
+
+    def times(self, times: Union[int, range, tuple[int, int]]):
+        if isinstance(times, range):
+            times = (times.start, times.stop)
+
+        self._base_token = tokens.TimesToken(times, tokens.CaptureGroupToken(self._right_most_token))
         return self
