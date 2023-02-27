@@ -18,12 +18,12 @@ classifiers = [
 dynamic = ["version", "dependencies", "readme"]
 
 [tool.setuptools.dynamic]
-version = {file="src/__init__.py", attr="__version__"}
-dependencies = {file="src/requirements.txt"}
+version = {file="magicregex/__init__.py", attr="__version__"}
+dependencies = {file="magicregex/requirements.txt"}
 readme = {file="README.md", content_type="text/markdown"}
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["magicregex"]
 
 [project.urls]
 "Homepage" = "https://github.com/loolzzz/MagicRegex"
