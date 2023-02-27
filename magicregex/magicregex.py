@@ -9,15 +9,23 @@ class MagicRegex:
         self._base_token: tokens.BaseToken = tokens.EmptyToken()
         self._flags = flags
 
+    def __eq__(self, other: Union['MagicRegex', str]):
+        if isinstance(other, MagicRegex):
+            return self.raw == other.raw
+        elif isinstance(other, str):
+            return self.raw == other
+        else:
+            raise TypeError(f'Unsupported operand type(s) for ==: {type(self)} and {type(other)}')
+
     def __add__(self, other: Union['MagicRegex', tokens.BaseToken]):
         if isinstance(other, MagicRegex):
             if other._flags != self._flags:
-                raise ValueError('cannot add two MagicRegex objects with different flags')
+                raise ValueError('Cannot add two MagicRegex objects with different flags')
             self._base_token += other._base_token
         elif isinstance(other, tokens.BaseToken):
             self._base_token += other
         else:
-            raise TypeError(f'unsupported operand type(s) for +: {type(self)} and {type(other)}')
+            raise TypeError(f'Unsupported operand type(s) for +: {type(self)} and {type(other)}')
         return self
 
     @property
@@ -34,7 +42,7 @@ class MagicRegex:
             flags=self._flags
         )
 
-    def AND(self, other: Union[str, tokens.BaseToken]):
+    def expr(self, other: Union[str, tokens.BaseToken]):
         self._base_token += (tokens.ExpressionToken(other)
                              if isinstance(other, str)
                              else other)
