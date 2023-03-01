@@ -9,11 +9,14 @@ class MagicRegex:
         self._base_token: tokens.BaseToken = tokens.EmptyToken()
         self._flags = flags
 
+    def __repr__(self):
+        return f'<MagicRegex({self.pattern!r}, flags={self._flags!r})>'
+
     def __eq__(self, other: Union['MagicRegex', str]):
         if isinstance(other, MagicRegex):
-            return self.raw == other.raw
+            return self.pattern == other.pattern
         elif isinstance(other, str):
-            return self.raw == other
+            return self.pattern == other
         else:
             raise TypeError(f'Unsupported operand type(s) for ==: {type(self)} and {type(other)}')
 
@@ -29,7 +32,7 @@ class MagicRegex:
         return self
 
     @property
-    def raw(self):
+    def pattern(self):
         return self._base_token.expression()
 
     @property
@@ -38,7 +41,7 @@ class MagicRegex:
 
     def compile(self):
         return re.compile(
-            pattern=self.raw,
+            pattern=self.pattern,
             flags=self._flags
         )
 
