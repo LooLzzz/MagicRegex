@@ -5,8 +5,9 @@ from typing import Set, Tuple, Union
 class BaseToken(ABC):
     """base class for all MagicRegex tokens"""
 
+    @property
     @abstractmethod
-    def expression(self) -> str:
+    def pattern(self) -> str:
         ...
 
     def __add__(self, other: 'BaseToken'):
@@ -21,7 +22,8 @@ class BaseToken(ABC):
 
 
 class EmptyToken(BaseToken):
-    def expression(self):
+    @property
+    def pattern(self):
         return ''
 
     def __add__(self, other: 'BaseToken'):
@@ -37,15 +39,17 @@ class ConcatToken(BaseToken):
     def right_most_token(self) -> 'BaseToken':
         return self._b.right_most_token
 
-    def expression(self):
-        return self._a.expression() + self._b.expression()
+    @property
+    def pattern(self):
+        return self._a.pattern + self._b.pattern
 
 
 class ExpressionToken(BaseToken):
     def __init__(self, expr: str):
         self._expr = expr
 
-    def expression(self):
+    @property
+    def pattern(self):
         return self._expr
 
 
@@ -60,8 +64,9 @@ class OrToken(BaseToken):
     def right_most_token(self) -> 'BaseToken':
         return self._b.right_most_token
 
-    def expression(self):
-        return rf'({self._a.expression()}|{self._b.expression()})'
+    @property
+    def pattern(self):
+        return rf'({self._a.pattern}|{self._b.pattern})'
 
 
 class CaptureGroupToken(BaseToken):
@@ -70,8 +75,9 @@ class CaptureGroupToken(BaseToken):
     def __init__(self, pattern: BaseToken):
         self._pattern = pattern
 
-    def expression(self):
-        return rf'({self._pattern.expression()})'
+    @property
+    def pattern(self):
+        return rf'({self._pattern.pattern})'
 
 
 class NamedCaptureGroupToken(BaseToken):
@@ -81,8 +87,9 @@ class NamedCaptureGroupToken(BaseToken):
         self._name = name
         self._expr = expr
 
-    def expression(self):
-        return rf'(?P<{self._name}>{self._expr.expression()})'
+    @property
+    def pattern(self):
+        return rf'(?P<{self._name}>{self._expr.pattern})'
 
 
 class AnyCharactersToken(BaseToken):
@@ -91,7 +98,8 @@ class AnyCharactersToken(BaseToken):
     def __init__(self, characters: Set[str]):
         self._characters = characters
 
-    def expression(self):
+    @property
+    def pattern(self):
         return f'[{"".join(self._characters)}]'
 
 
@@ -101,7 +109,8 @@ class NotCharactersToken(BaseToken):
     def __init__(self, characters: Set[str]):
         self._characters = characters
 
-    def expression(self):
+    @property
+    def pattern(self):
         return f'[^{"".join(self._characters)}]'
 
 
@@ -112,7 +121,8 @@ class TimesToken(BaseToken):
         self._times = times
         self._expr = expr
 
-    def expression(self):
+    @property
+    def pattern(self):
         if isinstance(self._times, tuple):
-            return f'{self._expr.expression()}{{{self._times[0]},{self._times[1]}}}'
-        return f'{self._expr.expression()}{{{self._times}}}'
+            return f'{self._expr.pattern}{{{self._times[0]},{self._times[1]}}}'
+        return f'{self._expr.pattern}{{{self._times}}}'

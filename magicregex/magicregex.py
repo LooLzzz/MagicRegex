@@ -33,7 +33,7 @@ class MagicRegex:
 
     @property
     def pattern(self):
-        return self._base_token.expression()
+        return self._base_token.pattern
 
     @property
     def _right_most_token(self):
