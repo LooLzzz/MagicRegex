@@ -4,6 +4,8 @@ import pytest
 
 from magicregex import MagicRegex, tokens
 
+from .types import TestCaseTuple
+
 
 @pytest.fixture
 def bad_additions():
@@ -28,7 +30,23 @@ def good_additions():
 
 @pytest.fixture
 def regex_outputs():
-    return [
+    return map(TestCaseTuple, [
+        (
+            re.compile(r'\d'),
+            MagicRegex().digit()
+        ),
+        (
+            re.compile(r'.'),
+            MagicRegex().any_character()
+        ),
+        (
+            re.compile(r'^'),
+            MagicRegex().start_of_line()
+        ),
+        (
+            re.compile(r'$'),
+            MagicRegex().end_of_line()
+        ),
         (
             re.compile(r'(abc){3}'),
             MagicRegex().expr('abc')
@@ -39,4 +57,4 @@ def regex_outputs():
             MagicRegex(flags=re.IGNORECASE).expr('abc')
                                            .times(3)
         )
-    ]
+    ])

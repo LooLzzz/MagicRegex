@@ -7,6 +7,8 @@ from pytest_subtests import SubTests
 
 from magicregex import MagicRegex
 
+from .types import TestCaseTuple
+
 
 def test_add__raises(subtests: SubTests,
                      bad_additions: List[Tuple[MagicRegex]]):
@@ -25,8 +27,8 @@ def test_add__raises(subtests: SubTests,
 
 
 def test_regex_output(subtests: SubTests,
-                      regex_outputs: List[Tuple[re.Pattern, MagicRegex]]):
-    for expected_result, test_case in regex_outputs:
+                      regex_outputs: List[TestCaseTuple]):
+    for test_case, expected_result in regex_outputs:
         with subtests.test():
             assert expected_result.pattern == test_case.pattern
             assert expected_result == test_case.compile()
